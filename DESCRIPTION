@@ -3,10 +3,10 @@ Type: Package
 Title: iDIG: Individual Detection of Inversions by Genotype
 Version: 0.1
 Author: Adrià Antich & Carles Galià-Camps
-Maintainer: Adrià Antich <adriantich@gmail.com> 
+Maintainer: Adrià Antich <a.antich@ceab.csic.es> 
 Description: 
 License: GPL-3
-Depends: 
+Depends: Rcpp
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.1
