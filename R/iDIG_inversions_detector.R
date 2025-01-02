@@ -1,6 +1,56 @@
-####Detect_Inversions Function####
+#' Scan chromosomes by number of snps
+#' 
+#' This function will perform a scanning along the chromosomes 
+#' taking into account ranges of snips of "window" length and "step"
+#' number of snps betweent he starts of the windows.
+#' 
+#' @details
+#' This function gets the dataframe obtained from the iDIG_loader function
+#' and scans the genome to obtain the mean value, the estandard deviation,
+#' the mean position and the cluster obtained from the kmean clustering
+#' algorithm for each window on "window" number of SNPs. The distance
+#' from the start of one window and the next one is defined by the "step"
+#' parameter. Only step equal or less than window are used. If the window
+#' and/or step are vectors of more than one value, the combinations that
+#' follow the previous condition mentioned are used.
+#' 
+#' Warning: the last window of each chromosome can be shorter than the given
+#' window size if:
+#' 
+#' (total_size - window)/step - ceiling((total_size-window)/step) != 0
+#' 
+#' @param iDIG_input DataFrame obtained by with the iDIG_loader function.
+#' This dataframe consist of one column with the label for the
+#' chromosome ('CHR') and a column for the positions ('POS') followed
+#' by as many columns as individuals analysed. Each row represents a SNP
+#' and with values for the individuals from 0 to 2 (0, homozigote with the 
+#' refference genome; 1 heterozigote; 2 homozigote for the alternative
+#' allele)
+#' 
+#' @param window Numeric vector. The window is the number of SNPs that will
+#' be used to obtain each descriptor value.
+#' 
+#' @param step Numeric vector. Distance in number of SNPs between two window
+#' starts. If Step is lower than window, then an overlap between windows 
+#' occur.
+#' 
+#' @value 
+#' List of four dataframes:
+#' 
+#' - results: mean values of each window for each individual
+#' 
+#' - results_sd: standard deviation values for each window and individual.
+#' 
+#' - position: number of SNPs used to compute the mean values of each window.
+#' 
+#' - clusters: for each window, the individuals are clustered into the following
+#' clusters using the kmean algorithm with 100 iterations: for centers equal to 
+#' 3, this is three possible clusters, A, B and C from highest to lowest mean
+#' window mean result; D and E if only two centers can be computed; and F if
+#' no clustering can be computed (all individuals have equal genotype window)
+#'
 
-Detect_Inversions <- function(iDIG_input, window, step) {
+scan_by_snps <- function(iDIG_input, window, step) {
 
     ##############
     # source("R/iDIG_loader.R")
