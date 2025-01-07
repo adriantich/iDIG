@@ -1,14 +1,14 @@
-#' Scan chromosomes by number of snps
+#' Scan chromosomes by number of SNPs
 #' 
 #' This function will perform a scanning along the chromosomes 
-#' taking into account ranges of snips of "window" length and "step"
-#' number of snps betweent he starts of the windows.
+#' taking into account ranges of SNPs of "window" length and "step"
+#' number of SNPs betweent he starts of the windows.
 #' 
 #' @details
 #' This function gets the dataframe obtained from the iDIG_loader function
-#' and scans the genome to obtain the mean value, the estandard deviation,
-#' the mean position and the cluster obtained from the kmean clustering
-#' algorithm for each window on "window" number of SNPs. The distance
+#' and scans the genome to obtain the mean allelic value, the estandard
+#' deviation, the mean position and the cluster obtained from the kmean
+#' clustering algorithm for each window on "window" number of SNPs. The distance
 #' from the start of one window and the next one is defined by the "step"
 #' parameter. Only step equal or less than window are used. If the window
 #' and/or step are vectors of more than one value, the combinations that
@@ -69,27 +69,27 @@ scan_by_snps <- function(iDIG_input, window, step) {
     ##############
     get_mean_window <- function(spot) {
         rows_selected <- spot:(spot + window - 1)
-        rows_selected <- rows_selected[rows_selected <= nrow(data_cols)]
-        window_data <- data_cols[rows_selected,,drop=FALSE]
+        rows_selected <- rows_selected[rows_selected <= nrow(iDIG_input_chr)]
+        window_data <- iDIG_input_chr[rows_selected,,drop=FALSE]
         return(colMeans(window_data, na.rm = TRUE))
     }
     get_sd_window <- function(spot) {
         rows_selected <- spot:(spot + window - 1)
-        rows_selected <- rows_selected[rows_selected <= nrow(data_cols)]
-        window_data <- data_cols[rows_selected,,drop=FALSE]
+        rows_selected <- rows_selected[rows_selected <= nrow(iDIG_input_chr)]
+        window_data <- iDIG_input_chr[rows_selected,,drop=FALSE]
         return(apply(window_data, 2, sd, na.rm = TRUE))
     }
     get_pos_window <- function(spot) {
         rows_selected <- spot:(spot + window - 1)
-        rows_selected <- rows_selected[rows_selected <= nrow(data_cols)]
-        window_data <- data_cols[rows_selected,,drop=FALSE]
+        rows_selected <- rows_selected[rows_selected <= nrow(iDIG_input_chr)]
+        window_data <- iDIG_input_chr[rows_selected,,drop=FALSE]
         return(as.data.frame(t(colSums(!is.na(window_data)))))
     }
     get_cluster <- function(spot) {
         # for(spot in spots){
         rows_selected <- spot:(spot + window - 1)
-        rows_selected <- rows_selected[rows_selected <= nrow(data_cols)]
-        window_data <- data_cols[rows_selected,,drop=FALSE]
+        rows_selected <- rows_selected[rows_selected <= nrow(iDIG_input_chr)]
+        window_data <- iDIG_input_chr[rows_selected,,drop=FALSE]
 
         # Perform k-means clustering of the mean values of each individual
         # we asume that there will be 3 clusters (populations)
@@ -141,7 +141,7 @@ scan_by_snps <- function(iDIG_input, window, step) {
     chromosome <- iDIG_input[, 1]
     iDIG_input[iDIG_input == -1] <- NA
     data_cols <- iDIG_input[, -1]  # All columns except the first (chromosome)
-    data_cols <- apply(data_cols, 2, as.numeric)
+    data_cols <- as.data.frame(apply(data_cols, 2, as.numeric))
     output <- list(results = data.frame(),
                    result_sd = data.frame(),
                    positions = data.frame(),
@@ -149,7 +149,7 @@ scan_by_snps <- function(iDIG_input, window, step) {
 
     for (chr in unique(chromosome)) {
     
-        iDIG_input_chr <- iDIG_input[which(chromosome == chr),]
+        iDIG_input_chr <- data_cols[which(chromosome == chr),]
 
         total <- nrow(iDIG_input_chr)
         for(comb in seq_len(nrow(combinations))){

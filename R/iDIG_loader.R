@@ -5,7 +5,7 @@
 #' columns outperforming the processing time.
 #'
 #' @details
-#' iDIG_loader is capable of optimally load the three main outputs required 
+#' iDIG_loader is capable of optimally load the three main files required 
 #' by the inversion detector. The output of this function will be data frame
 #' in which the first two columns will be the chromosome (CHR) and the position
 #' (POS) of the SNPs. The rest of the columns will be the genotypes for each
