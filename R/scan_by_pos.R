@@ -40,7 +40,7 @@
 #' two window starts. If Step is lower than window, then an overlap between
 #' windows occur.
 #' 
-#' @value
+#' @returns
 #' List of four dataframes:
 #' 
 #' - results: mean values of each window for each individual
@@ -56,23 +56,25 @@
 #' window mean result; D and E if only two centers can be computed; and F if
 #' no clustering can be computed (all individuals have equal genotype window)
 #'
+#' @export
+#' 
 
 scan_by_pos <- function(iDIG_input, window, step) {
 
     ##############
-    source("R/iDIG_loader.R")
+    # source("R/iDIG_loader.R")
 
-    gt_filename <- '../iDIG_Rpackage/2allele_tots_012_chr11.012'
-    indv_filename <- '../iDIG_Rpackage/2allele_tots_012_chr11.012.indv'
-    pos_filename <- '../iDIG_Rpackage/2allele_tots_012_chr11.012.pos'
+    # gt_filename <- '../iDIG_Rpackage/2allele_tots_012_chr11.012'
+    # indv_filename <- '../iDIG_Rpackage/2allele_tots_012_chr11.012.indv'
+    # pos_filename <- '../iDIG_Rpackage/2allele_tots_012_chr11.012.pos'
 
-    idig_inputs <- iDIG_loader(gt_filename = gt_filename,
-                            indv_filename = indv_filename,
-                            pos_filename = pos_filename)
+    # idig_inputs <- iDIG_loader(gt_filename = gt_filename,
+    #                         indv_filename = indv_filename,
+    #                         pos_filename = pos_filename)
 
-    iDIG_input <- idig_inputs
-    window <- c(9,100,1000)
-    step <- c(7,100)
+    # iDIG_input <- idig_inputs
+    # window <- c(9,100,1000)
+    # step <- c(7,100)
     ##############
     get_mean_window_pos <- function(spot) {
         rows_selected <- spot:(spot + window - 1)
@@ -86,12 +88,12 @@ scan_by_pos <- function(iDIG_input, window, step) {
         window_data <- iDIG_input_chr[iDIG_input_chr$POS %in% rows_selected,,drop=FALSE]
         return(apply(window_data, 2, sd, na.rm = TRUE))
     }
-    get_pos_window_pos <- function(spot) {
-        rows_selected <- spot:(spot + window - 1)
-        rows_selected <- rows_selected[rows_selected <= total]
-        window_data <- iDIG_input_chr[iDIG_input_chr$POS %in% rows_selected,,drop=FALSE]
-        return(as.data.frame(t(colSums(!is.na(window_data)))))
-    }
+    # get_pos_window_pos <- function(spot) {
+    #     rows_selected <- spot:(spot + window - 1)
+    #     rows_selected <- rows_selected[rows_selected <= total]
+    #     window_data <- iDIG_input_chr[iDIG_input_chr$POS %in% rows_selected,,drop=FALSE]
+    #     return(as.data.frame(t(colSums(!is.na(window_data)))))
+    # }
     get_cluster_pos <- function(spot) {
         # for(spot in spots){
         rows_selected <- spot:(spot + window - 1)
@@ -240,27 +242,3 @@ scan_by_pos <- function(iDIG_input, window, step) {
     }
     return(output)
 }
-
-window_step_plot <- function(iDIG_obj) {
-    ##############
-    # iDIG_obj <- output
-    ##############
-    library(ggplot2)
-    library(reshape2)
-    library(plotly)
-
-    # from wide format to long format
-    inv_long <- melt(iDIG_obj$results, id.vars = c("chromosome", "window", "step","POS"))
-
-    p <- ggplot(inv_long,aes(x=POS,y = value)) +
-        geom_line(aes( group = variable)) +
-        facet_grid(window ~ step, labeller = labeller(window = label_both, step = label_both)) +
-        labs(x = "Position", y = "Value") +
-        theme(strip.text.x = element_text(size = 10, face = "bold"),
-              strip.text.y = element_text(size = 10, face = "bold"))
-
-    return(p)
-    # ggsave("plot.png",p,width = 15, height = 10)
-
-}
-
