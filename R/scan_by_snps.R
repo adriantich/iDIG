@@ -34,7 +34,7 @@
 #' starts. If Step is lower than window, then an overlap between windows 
 #' occur.
 #' 
-#' @value 
+#' @returns
 #' List of four dataframes:
 #' 
 #' - results: mean values of each window for each individual
@@ -49,6 +49,8 @@
 #' window mean result; D and E if only two centers can be computed; and F if
 #' no clustering can be computed (all individuals have equal genotype window)
 #'
+#' @export
+#' 
 
 scan_by_snps <- function(iDIG_input, window, step) {
 
@@ -181,27 +183,3 @@ scan_by_snps <- function(iDIG_input, window, step) {
     }
     return(output)
 }
-
-window_step_plot <- function(iDIG_obj) {
-    ##############
-    # iDIG_obj <- output
-    ##############
-    library(ggplot2)
-    library(reshape2)
-    library(plotly)
-
-    # from wide format to long format
-    inv_long <- melt(iDIG_obj$results, id.vars = c("chromosome", "window", "step","POS"))
-
-    p <- ggplot(inv_long,aes(x=POS,y = value)) +
-        geom_line(aes( group = variable)) +
-        facet_grid(window ~ step, labeller = labeller(window = label_both, step = label_both)) +
-        labs(x = "Position", y = "Value") +
-        theme(strip.text.x = element_text(size = 10, face = "bold"),
-              strip.text.y = element_text(size = 10, face = "bold"))
-
-    return(p)
-    # ggsave("plot.png",p,width = 15, height = 10)
-
-}
-
