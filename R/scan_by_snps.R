@@ -34,6 +34,9 @@
 #' starts. If Step is lower than window, then an overlap between windows 
 #' occur.
 #' 
+#' @param min_size Numeric. Minimum number of positions in the chromosome between
+#' the first SNP and the last SNP.
+#' 
 #' @returns
 #' List of four dataframes:
 #' 
@@ -52,7 +55,7 @@
 #' @export
 #' 
 
-scan_by_snps <- function(iDIG_input, window, step) {
+scan_by_snps <- function(iDIG_input, window, step, min_size = 1) {
 
     ##############
     # source("R/iDIG_loader.R")
@@ -152,13 +155,23 @@ scan_by_snps <- function(iDIG_input, window, step) {
     for (chr in unique(chromosome)) {
     
         iDIG_input_chr <- data_cols[which(chromosome == chr),]
+        # check for the min size of the chromosome
+        if(iDIG_input_chr$POS[nrow(iDIG_input_chr)] - iDIG_input_chr$POS[1] < min_size){
+            warning("The chromosome ", chr, " is smaller than the minimum size")
+            next
+        }
 
         total <- nrow(iDIG_input_chr)
         for(comb in seq_len(nrow(combinations))){
             window <- combinations[comb,1]
             step <- combinations[comb,2]
-            spots <- seq(from = 1, to = (total - window + 1 + step), by = step) # I add the step to the total to make sure the last window is included even with NAs
-
+            if((total - window + 1 + step) < 1){
+                warning("The chromosome ", chr, " will have only one window")
+                spots <- 1
+            } else {
+                spots <- seq(from = 1, to = (total - window + 1 + step), by = step) # I add the step to the total to make sure the last window is included even with NAs
+            }
+            
             result <- as.data.frame(t(sapply(spots, get_mean_window)))
 
             result_sd <- as.data.frame(t(sapply(spots, get_sd_window)))

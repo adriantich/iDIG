@@ -40,6 +40,9 @@
 #' two window starts. If Step is lower than window, then an overlap between
 #' windows occur.
 #' 
+#' @param min_size Numeric. Minimum number of positions in the chromosome between
+#' the first SNP and the last SNP.
+#' 
 #' @returns
 #' List of four dataframes:
 #' 
@@ -59,7 +62,7 @@
 #' @export
 #' 
 
-scan_by_pos <- function(iDIG_input, window, step) {
+scan_by_pos <- function(iDIG_input, window, step, min_size = 1) {
 
     ##############
     # source("R/iDIG_loader.R")
@@ -162,6 +165,12 @@ scan_by_pos <- function(iDIG_input, window, step) {
         # be sure that the positions are ordered
         iDIG_input_chr <- iDIG_input_chr[order(iDIG_input_chr$POS),]
 
+        # check for the min size of the chromosome
+        if(iDIG_input_chr$POS[nrow(iDIG_input_chr)] - iDIG_input_chr$POS[1] < min_size){
+            warning("The chromosome ", chr, " is smaller than the minimum size")
+            next
+        }
+
         total <- iDIG_input_chr$POS[nrow(iDIG_input_chr)]
         first_pos <- iDIG_input_chr$POS[1]
         for(comb in seq_len(nrow(combinations))){
@@ -183,6 +192,9 @@ scan_by_pos <- function(iDIG_input, window, step) {
             # can be too large. In this case the process is done in chunks.
             chunks <- ceiling(window/step)
             first_spot <- 1
+            if(length(spot_starts) < chunks){
+                chunks <- length(spot_starts)
+            }
             last_spot <- ceiling(length(spot_starts)/chunks)
 
             for (i in 1:chunks){
