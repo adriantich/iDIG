@@ -45,6 +45,50 @@ iDIG_loader <- function(gt_filename = NULL,
                         indv_filename = NULL,
                         pos_filename = NULL) {
 
+    library(Rcpp)
+
+    # Define the C++ function
+    cppFunction('
+        #include <Rcpp.h>
+        #include <fstream>
+        #include <sstream>
+        #include <vector>
+        using namespace Rcpp;
+
+        // [[Rcpp::export]]
+        DataFrame importtransposedTSV(std::string input_file) {
+            std::ifstream infile(input_file);
+            if (!infile.is_open()) {
+                stop("Could not open file");
+            }
+
+            std::vector<std::vector<std::string>> data;
+            std::string line, cell;
+
+            // Read the TSV file
+            while (std::getline(infile, line)) {
+                std::stringstream linestream(line);
+                std::vector<std::string> row;
+                while (std::getline(linestream, cell, \'\\t\')) {
+                    row.push_back(cell);
+                }
+                data.push_back(row);
+            }
+
+            if (data.empty()) {
+                stop("No data read from file");
+            }
+
+            // Convert to DataFrame
+            List df(data.size());
+            for (size_t i = 0; i < data.size(); ++i) {
+                df[i] = wrap(data[i]);
+            }
+            DataFrame result = DataFrame(df);
+            result.attr("names") = R_NilValue; // Remove column names
+            return result;
+        }
+    ')
     # add the pos to the list if specified
     if (is.null(pos_filename)) {
         stop("pos_filename is NULL. pos_filename is required.")
@@ -81,48 +125,3 @@ iDIG_loader <- function(gt_filename = NULL,
     }
     return(cbind(pos_table, gt_table))
 }
-
-library(Rcpp)
-
-# Define the C++ function
-cppFunction('
-    #include <Rcpp.h>
-    #include <fstream>
-    #include <sstream>
-    #include <vector>
-    using namespace Rcpp;
-
-    // [[Rcpp::export]]
-    DataFrame importtransposedTSV(std::string input_file) {
-        std::ifstream infile(input_file);
-        if (!infile.is_open()) {
-            stop("Could not open file");
-        }
-
-        std::vector<std::vector<std::string>> data;
-        std::string line, cell;
-
-        // Read the TSV file
-        while (std::getline(infile, line)) {
-            std::stringstream linestream(line);
-            std::vector<std::string> row;
-            while (std::getline(linestream, cell, \'\\t\')) {
-                row.push_back(cell);
-            }
-            data.push_back(row);
-        }
-
-        if (data.empty()) {
-            stop("No data read from file");
-        }
-
-        // Convert to DataFrame
-        List df(data.size());
-        for (size_t i = 0; i < data.size(); ++i) {
-            df[i] = wrap(data[i]);
-        }
-        DataFrame result = DataFrame(df);
-        result.attr("names") = R_NilValue; // Remove column names
-        return result;
-    }
-')
